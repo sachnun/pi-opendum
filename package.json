@@ -1,0 +1,18 @@
+{
+  "name": "pi-opendum",
+  "version": "0.1.0",
+  "description": "Pi provider extension for Opendum",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sachnun/pi-opendum.git"
+  },
+  "files": ["index.ts"],
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
