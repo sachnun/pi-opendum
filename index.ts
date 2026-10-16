@@ -1,7 +1,7 @@
 import type { ExtensionAPI, ProviderModelConfig } from "@earendil-works/pi-coding-agent";
 
 const PROVIDER_ID = "opendum";
-const BASE_URL = "https://proxy.opendum.tech/v1";
+const BASE_URL = "https://api.opendum.com/v1";
 const API = "openai-completions";
 const THINKING_LEVELS: (keyof NonNullable<ProviderModelConfig["thinkingLevelMap"]>)[] = ["minimal", "low", "medium", "high", "xhigh", "max"];
 
