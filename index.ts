@@ -4,6 +4,10 @@ const PROVIDER_ID = "opendum";
 const BASE_URL = "https://api.opendum.com/v1";
 const API = "openai-completions";
 const THINKING_LEVELS: (keyof NonNullable<ProviderModelConfig["thinkingLevelMap"]>)[] = ["minimal", "low", "medium", "high", "xhigh", "max"];
+const COMPAT: NonNullable<ProviderModelConfig["compat"]> = {
+	sendSessionAffinityHeaders: true,
+	sessionAffinityFormat: "openai",
+};
 
 interface CatalogModel {
 	id: string;
@@ -44,7 +48,12 @@ function toProviderModel(model: CatalogModel): ProviderModelConfig {
 		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
 		contextWindow: model.limit?.context || 500000,
 		maxTokens: model.limit?.output || 128000,
+		compat: { ...COMPAT },
 	};
+}
+
+function withCompat(model: ProviderModelConfig): ProviderModelConfig {
+	return { ...model, compat: { ...model.compat, ...COMPAT } };
 }
 
 async function fetchCatalog(apiKey: string, signal: AbortSignal): Promise<ProviderModelConfig[]> {
@@ -54,7 +63,7 @@ async function fetchCatalog(apiKey: string, signal: AbortSignal): Promise<Provid
 	});
 	if (!response.ok) throw new Error(`GET /models failed: ${response.status}`);
 	const payload = (await response.json()) as { data?: CatalogModel[] };
-	return (payload.data ?? []).map(toProviderModel);
+	return (payload.data ?? []).map(toProviderModel).map(withCompat);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -64,7 +73,7 @@ export default function (pi: ExtensionAPI) {
 		api: API,
 		apiKey: "$OPENDUM_API_KEY",
 		async refreshModels(context) {
-			const cached = context.stored?.models.filter((model) => model.provider === PROVIDER_ID) ?? [];
+			const cached = (context.stored?.models.filter((model) => model.provider === PROVIDER_ID) ?? []).map(withCompat);
 			if (!context.allowNetwork || context.signal.aborted) return cached;
 
 			const apiKey = context.credential?.type === "api_key" ? context.credential.key : undefined;
